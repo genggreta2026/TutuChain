@@ -1,19 +1,34 @@
-# TutuChain 图图链钱包 - 创世版
-import hashlib
+import json
+import os
 
-# 创世标识（只有这个链的钱包有效）
-GENESIS_SEED = "TUTU_CHAIN_20260406_图"
+WALLET_FILE = "wallet_data.json"
 
-def generate_wallet():
-    # 生成私钥
-    private_key = hashlib.sha256(GENESIS_SEED.encode()).hexdigest()
-    # 生成地址
-    address = "TU" + hashlib.md5(private_key.encode()).hexdigest()[:16]
-    
-    print("💰 图图链钱包生成成功！")
-    print(f"地址: {address}")
-    print(f"私钥: {private_key}")
-    print("⚠️  私钥请保密！丢失无法找回！")
+class Wallet:
+    def __init__(self):
+        self.balance = 0
+        self._load()
 
+    def _load(self):
+        if os.path.exists(WALLET_FILE):
+            with open(WALLET_FILE, "r", encoding="utf-8") as f:
+                self.balance = json.load(f).get("balance", 0)
+        else:
+            self.balance = 0
+            self._save()
+
+    def _save(self):
+        with open(WALLET_FILE, "w", encoding="utf-8") as f:
+            json.dump({"balance": self.balance}, f)
+
+    def add(self, amount):
+        self.balance += amount
+        self._save()
+
+    def get_balance(self):
+        return self.balance
+
+
+# 👇 只显示钱包余额，干净中文，没有挖矿信息
 if __name__ == "__main__":
-    generate_wallet()
+    wallet = Wallet()
+    print(f"【钱包】当前余额：{wallet.get_balance()}")
